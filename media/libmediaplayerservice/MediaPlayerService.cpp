@@ -1353,23 +1353,10 @@ void MediaPlayerService::Client::notify(
 
             if (client->mAudioOutput != NULL)
                 client->mAudioOutput->switchToNextOutput();
-
-            errStartNext = nextClient->start();
-        }
-    }
-
-    if (nextClient != NULL) {
-        sp<IMediaPlayerClient> nc;
-        {
-            Mutex::Autolock l(nextClient->mLock);
-            nc = nextClient->mClient;
-        }
-        if (nc != NULL) {
-            if (errStartNext == NO_ERROR) {
-                nc->notify(MEDIA_INFO, MEDIA_INFO_STARTED_AS_NEXT, 0, obj);
-            } else {
-                nc->notify(MEDIA_ERROR, MEDIA_ERROR_UNKNOWN , 0, obj);
-                ALOGE("gapless:start playback for next track failed, err(%d)", errStartNext);
+            client->mNextClient->start();
+            if (client->mNextClient->mClient != NULL) {
+                client->mNextClient->mClient->notify(
+                        MEDIA_INFO, MEDIA_INFO_STARTED_AS_NEXT, 0, obj);
             }
         }
     }
